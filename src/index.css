@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { font-family: 'DM Sans', sans-serif; color: #22231f; background: #f7f6f2; font-synthesis: none; }
+  * { box-sizing: border-box; }
+  body { @apply m-0 bg-stone-50 text-stone-900 antialiased overflow-x-hidden; }
+  h1, h2, h3 { letter-spacing: -0.035em; }
+  ::selection { background: #d8bd83; color: #20211c; }
+}
+
+@layer components {
+  .btn-primary { @apply inline-flex items-center justify-center bg-stone-900 text-white px-5 py-3 rounded-xl hover:bg-amber-800 transition-all duration-200 font-semibold shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-2; }
+  .btn-secondary { @apply inline-flex items-center justify-center bg-white text-stone-800 px-5 py-3 rounded-xl border border-stone-200 hover:bg-stone-100 transition-colors duration-200 font-semibold; }
+  .btn-danger { @apply bg-red-700 text-white px-4 py-2 rounded-xl hover:bg-red-800 transition-colors duration-200 font-medium; }
+  .card { @apply bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden; }
+  .input-field { @apply w-full px-4 py-3 border border-stone-200 bg-white rounded-xl focus:ring-2 focus:ring-amber-600/30 focus:border-amber-700 outline-none transition-all placeholder:text-stone-400; }
+}
+
+.brand-name { font-family: 'Playfair Display', Georgia, serif; }
+.shop-header { background: rgba(255,255,255,.94); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(41,37,36,.08); }
+.hero-panel { position: relative; overflow: hidden; background: #20221d; }
+.hero-panel::before, .hero-panel::after { content: ''; position: absolute; border: 1px solid rgba(216,189,131,.25); border-radius: 9999px; pointer-events: none; }
+.hero-panel::before { width: 34rem; height: 34rem; right: -7rem; top: -17rem; }
+.hero-panel::after { width: 26rem; height: 26rem; right: -3rem; top: -13rem; }
+.hero-glow { background: radial-gradient(ellipse at 80% 10%, rgba(183,145,72,.25), transparent 45%); }
+.category-tile { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.category-tile:hover { transform: translateY(-3px); border-color: #c8ad77; box-shadow: 0 14px 34px rgba(41,37,36,.09); }
+.product-image { background: linear-gradient(135deg,#f3f0e9,#e9e5dc); }
+.product-card { transition: transform .25s ease, box-shadow .25s ease; }
+.product-card:hover { transform: translateY(-5px); box-shadow: 0 18px 38px rgba(41,37,36,.12); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
