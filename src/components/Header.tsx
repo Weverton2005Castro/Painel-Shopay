@@ -64,12 +64,12 @@ export default function Header() {
             >
               Catálogo
             </Link>
-            <Link
+            {/* <Link
               to="/admin"
               className="px-3 py-2 rounded-lg text-sm text-stone-600 hover:text-stone-950 hover:bg-stone-100 transition-colors font-semibold"
             >
               Admin
-            </Link>
+            </Link> */}
           </nav>
         </div>
       </div>
