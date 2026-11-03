@@ -26,25 +26,28 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+    <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-10">
+      <div className="card w-full max-w-md p-6 sm:p-8">
+        <p className="section-title text-center">Shopay • Administração</p>
+        <h1 className="mb-6 text-center text-2xl font-bold text-brand-950">
           Acesso Administrativo
         </h1>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert alert-danger mb-4">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="admin-username" className="input-label">
               Usuário
             </label>
             <input
               type="text"
+              id="admin-username"
+              autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="input-field"
@@ -53,11 +56,13 @@ export default function AdminLogin() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="admin-password" className="input-label">
               Senha
             </label>
             <input
               type="password"
+              id="admin-password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="input-field"
@@ -70,8 +75,8 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800">
+        <div className="mt-6 p-4 alert alert-info">
+          <p className="text-sm">
             <strong>Credenciais de demonstração:</strong><br />
             Usuário: admin<br />
             Senha: admin123

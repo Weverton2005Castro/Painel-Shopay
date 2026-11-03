@@ -297,7 +297,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="loading-spinner h-12 w-12"></div>
       </div>
     );
   }
@@ -305,37 +305,37 @@ export default function AdminDashboard() {
   const activeCount = products.filter(p => p.active).length;
 
   return (
-    <div className="w-full px-4 py-8 overflow-x-hidden">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Painel Administrativo</h1>
+    <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold text-brand-950">Painel Administrativo</h1>
         <button onClick={handleLogout} className="btn-danger">
           Sair
         </button>
       </div>
 
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="alert alert-success mb-4">
           {success}
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Total de Produtos</h3>
-          <p className="text-3xl font-bold text-gray-800 mt-2">{products.length}</p>
+        <div className="card p-6">
+          <h3 className="text-brand-500 text-sm font-medium">Total de Produtos</h3>
+          <p className="text-3xl font-bold text-brand-950 mt-2">{products.length}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Produtos Ativos</h3>
-          <p className="text-3xl font-bold text-green-600 mt-2">{activeCount}</p>
+        <div className="card p-6">
+          <h3 className="text-brand-500 text-sm font-medium">Produtos Ativos</h3>
+          <p className="text-3xl font-bold text-success-600 mt-2">{activeCount}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Produtos Inativos</h3>
-          <p className="text-3xl font-bold text-red-600 mt-2">{products.length - activeCount}</p>
+        <div className="card p-6">
+          <h3 className="text-brand-500 text-sm font-medium">Produtos Inativos</h3>
+          <p className="text-3xl font-bold text-danger-600 mt-2">{products.length - activeCount}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="card p-6 mb-8">
+        <div className="flex flex-col items-stretch justify-between gap-5 lg:flex-row lg:items-center">
           <div className="flex-1 w-full space-y-2">
             <input
               type="text"
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="input-field"
             />
-            <label className="flex items-center text-sm text-gray-600">
+            <label className="flex items-center text-sm text-brand-600">
               <input
                 type="checkbox"
                 checked={filterNoLink}
@@ -354,7 +354,7 @@ export default function AdminDashboard() {
               Mostrar apenas produtos sem link
             </label>
           </div>
-          <div className="flex gap-2">
+          <div className="admin-actions flex flex-wrap gap-2">
             <button onClick={() => handleOpenModal()} className="btn-primary">
               + Novo Produto
             </button>
@@ -377,32 +377,32 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="table-container">
         {filteredProducts.length > 0 ? (
-          <table className="w-full table-fixed">
-            <thead className="bg-gray-50">
+          <table className="table table-fixed">
+            <thead className="table-header">
               <tr>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[40%]">
+                <th className="table-header-cell w-[40%]">
                   Produto
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+                <th className="table-header-cell w-[20%]">
                   Categoria
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                <th className="table-header-cell w-[15%]">
                   Preço
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
+                <th className="table-header-cell w-[10%]">
                   Status
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                <th className="table-header-cell w-[15%]">
                   Ações
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-4">
+                <tr key={product.id} className="table-row">
+                  <td className="table-cell">
                     <div className="flex items-center">
                       <img
                         src={product.imageUrl}
@@ -410,42 +410,42 @@ export default function AdminDashboard() {
                         className="w-10 h-10 object-cover rounded flex-shrink-0"
                       />
                       <div className="ml-3 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">
+                        <div className="text-sm font-medium text-brand-950 truncate">
                           {product.name}
                         </div>
                         {product.featured && (
-                          <span className="text-xs text-indigo-600">Destaque</span>
+                          <span className="text-xs text-accent-600">Destaque</span>
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-4 text-sm text-gray-500 truncate">
+                  <td className="table-cell text-sm text-brand-500 truncate">
                     {product.category}
                   </td>
-                  <td className="px-3 py-4 text-sm text-gray-900">
+                  <td className="table-cell text-sm text-brand-950">
                     R$ {product.price.toFixed(2)}
                   </td>
-                  <td className="px-3 py-4">
+                  <td className="table-cell">
                     {product.active ? (
-                      <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded">
+                      <span className="badge badge-success">
                         Ativo
                       </span>
                     ) : (
-                      <span className="px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded">
+                      <span className="badge badge-danger">
                         Inativo
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-4 text-sm font-medium">
+                  <td className="table-cell text-sm font-medium">
                     <button
                       onClick={() => handleOpenModal(product)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-2"
+                      className="text-accent-600 hover:text-accent-800 mr-2"
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => handleDelete(product)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-danger-600 hover:text-danger-800"
                     >
                       Excluir
                     </button>
@@ -467,20 +467,20 @@ export default function AdminDashboard() {
         title={editingProduct ? 'Editar Produto' : 'Novo Produto'}
       >
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert alert-danger mb-4">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
+          <div className="alert alert-success mb-4">
             {success}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="input-label">
               Nome *
             </label>
             <input
@@ -493,7 +493,7 @@ export default function AdminDashboard() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="input-label">
               Descrição *
             </label>
             <textarea
@@ -507,7 +507,7 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="input-label">
                 Preço *
               </label>
               <input
@@ -521,7 +521,7 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="input-label">
                 Categoria *
               </label>
               <select
@@ -540,7 +540,7 @@ export default function AdminDashboard() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="input-label">
               URL da Imagem *
             </label>
             <input
@@ -554,7 +554,7 @@ export default function AdminDashboard() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="input-label">
               Link de Afiliado
             </label>
             <input
@@ -568,7 +568,7 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="input-label">
                 Marca/Fornecedor
               </label>
               <input
@@ -581,7 +581,7 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="input-label">
                 Comissão (R$)
               </label>
               <input
@@ -603,7 +603,7 @@ export default function AdminDashboard() {
                 onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                 className="mr-2"
               />
-              <span className="text-sm text-gray-700">Destacar na página inicial</span>
+              <span className="text-sm text-brand-700">Destacar na página inicial</span>
             </label>
 
             <label className="flex items-center">
@@ -613,7 +613,7 @@ export default function AdminDashboard() {
                 onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                 className="mr-2"
               />
-              <span className="text-sm text-gray-700">Produto ativo</span>
+              <span className="text-sm text-brand-700">Produto ativo</span>
             </label>
           </div>
 
@@ -634,10 +634,10 @@ export default function AdminDashboard() {
         title="Confirmar Exclusão"
       >
         <div className="space-y-4">
-          <p className="text-gray-700">
+          <p className="text-brand-700">
             Tem certeza que deseja excluir o produto <strong>{deleteConfirm?.name}</strong>?
           </p>
-          <p className="text-sm text-gray-500">Esta ação não pode ser desfeita.</p>
+          <p className="text-sm text-brand-500">Esta ação não pode ser desfeita.</p>
           <div className="flex gap-2 pt-4">
             <button onClick={confirmDelete} className="btn-danger flex-1">
               Confirmar Exclusão

@@ -32,7 +32,8 @@ async function generateSitemap() {
 
     if (error) {
       console.error('❌ Erro ao buscar produtos:', error);
-      process.exit(1);
+      console.warn('⚠️ Mantendo o sitemap existente; o build continuará sem atualizar os produtos.');
+      return;
     }
 
     console.log(`✅ Encontrados ${products.length} produtos ativos`);
@@ -86,7 +87,7 @@ ${allUrls.map(url => `  <url>
 
   } catch (error) {
     console.error('❌ Erro ao gerar sitemap:', error);
-    process.exit(1);
+    console.warn('⚠️ Mantendo o sitemap existente; o build continuará sem atualizar os produtos.');
   }
 }
 

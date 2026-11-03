@@ -29,7 +29,7 @@ export default function ProductDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="loading-spinner h-12 w-12"></div>
       </div>
     );
   }
@@ -54,7 +54,7 @@ export default function ProductDetail() {
     <div className="container mx-auto px-4 py-10">
       <button
         onClick={() => navigate(-1)}
-        className="text-stone-600 hover:text-amber-800 mb-6 inline-flex items-center gap-2 font-semibold"
+        className="text-brand-600 hover:text-accent-700 mb-6 inline-flex items-center gap-2 font-semibold"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -62,7 +62,7 @@ export default function ProductDetail() {
         Voltar
       </button>
 
-      <div className="bg-white rounded-3xl border border-stone-200/80 shadow-sm overflow-hidden">
+      <div className="card rounded-3xl overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 p-5 md:p-10">
           <div className="product-image rounded-2xl overflow-hidden">
             <img
@@ -73,33 +73,33 @@ export default function ProductDetail() {
           </div>
 
           <div>
-            <span className="text-xs text-amber-800 font-bold uppercase tracking-[.16em]">
+            <span className="text-xs text-accent-700 font-bold uppercase tracking-[0.16em]">
               {product.category}
             </span>
             {product.featured && (
-              <span className="ml-2 text-xs bg-amber-100 text-amber-900 px-3 py-1 rounded-full font-semibold">
+              <span className="ml-2 badge badge-warning">
                 Destaque
               </span>
             )}
             {product.brand && (
-              <span className="ml-2 text-xs bg-stone-100 text-stone-600 px-3 py-1 rounded-full font-semibold">
+              <span className="ml-2 badge badge-neutral">
                 {product.brand}
               </span>
             )}
-            <h1 className="text-4xl font-bold text-stone-900 mt-3 mb-5 brand-name">
+            <h1 className="text-4xl font-bold text-brand-950 mt-3 mb-5 brand-name">
               {product.name}
             </h1>
             <div className="mb-6">
-              <p className="text-3xl font-bold text-stone-900">
+              <p className="text-3xl font-bold text-brand-950">
                 R$ {product.price.toFixed(2)}
               </p>
               {product.commission && product.commission > 0 && (
-                <p className="text-sm text-emerald-700 mt-2">
+                <p className="text-sm text-success-700 mt-2">
                   Comissão: R$ {product.commission.toFixed(2)}
                 </p>
               )}
             </div>
-            <p className="text-stone-600 text-lg leading-relaxed mb-8">
+            <p className="text-brand-600 text-lg leading-relaxed mb-8">
               {product.description}
             </p>
 
@@ -113,17 +113,17 @@ export default function ProductDetail() {
                 Comprar agora
               </a>
             ) : (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
-                <p className="text-amber-900 text-sm">
+              <div className="alert alert-warning mb-4">
+                <p className="text-sm">
                   ⚠️ Este produto ainda não possui link de afiliado configurado.
                   Entre em contato com o administrador para mais informações.
                 </p>
               </div>
             )}
 
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <h3 className="font-semibold text-gray-800 mb-2">Informações adicionais</h3>
-              <ul className="text-sm text-gray-600 space-y-1">
+            <div className="mt-8 pt-8 border-t border-brand-200">
+              <h3 className="font-semibold text-brand-800 mb-2">Informações adicionais</h3>
+              <ul className="text-sm text-brand-600 space-y-1">
                 <li>Categoria: {product.category}</li>
                 <li>ID do produto: {product.id}</li>
                 <li>

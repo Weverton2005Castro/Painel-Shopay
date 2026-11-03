@@ -80,19 +80,23 @@ export default function Catalog() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="loading-spinner h-12 w-12"></div>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto px-4 py-10">
-      <div className="mb-8"><p className="text-xs uppercase tracking-[.2em] text-amber-800 font-bold mb-2">A vitrine Shopay</p><h1 className="text-4xl font-bold text-stone-900 brand-name">Catálogo de produtos</h1><p className="text-stone-500 mt-2">Descubra sua próxima escolha favorita.</p></div>
+      <div className="section-header">
+        <p className="section-title">A vitrine Shopay</p>
+        <h1 className="section-heading">Catálogo de produtos</h1>
+        <p className="text-brand-500 mt-2">Descubra sua próxima escolha favorita.</p>
+      </div>
 
-      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-sm p-5 md:p-6 mb-8">
+      <div className="card p-5 md:p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="input-label">
               Categoria
             </label>
             <select
@@ -110,7 +114,7 @@ export default function Catalog() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="input-label">
               Ordenar por
             </label>
             <select
@@ -125,10 +129,10 @@ export default function Catalog() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="input-label">
               Resultados
             </label>
-            <div className="px-4 py-3 bg-stone-100 rounded-xl text-stone-700 font-semibold">
+            <div className="px-4 py-3 bg-brand-100 rounded-xl text-brand-700 font-semibold">
               {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''}
             </div>
           </div>
