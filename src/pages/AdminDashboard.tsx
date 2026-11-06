@@ -307,7 +307,7 @@ export default function AdminDashboard() {
   return (
     <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-brand-950">Painel Administrativo</h1>
+        <h1 className="text-2xl font-bold text-brand-950 sm:text-3xl">Painel Administrativo</h1>
         <button onClick={handleLogout} className="btn-danger">
           Sair
         </button>
@@ -334,7 +334,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="card p-6 mb-8">
+      <div className="card mb-8 p-4 sm:p-6">
         <div className="flex flex-col items-stretch justify-between gap-5 lg:flex-row lg:items-center">
           <div className="flex-1 w-full space-y-2">
             <input
@@ -505,7 +505,7 @@ export default function AdminDashboard() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="input-label">
                 Preço *
@@ -566,7 +566,7 @@ export default function AdminDashboard() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="input-label">
                 Marca/Fornecedor
@@ -595,7 +595,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
             <label className="flex items-center">
               <input
                 type="checkbox"
@@ -617,11 +617,11 @@ export default function AdminDashboard() {
             </label>
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row">
             <button type="submit" className="btn-primary flex-1">
               {editingProduct ? 'Atualizar' : 'Cadastrar'}
             </button>
-            <button type="button" onClick={handleCloseModal} className="btn-secondary">
+            <button type="button" onClick={handleCloseModal} className="btn-secondary sm:flex-1">
               Cancelar
             </button>
           </div>
@@ -638,11 +638,11 @@ export default function AdminDashboard() {
             Tem certeza que deseja excluir o produto <strong>{deleteConfirm?.name}</strong>?
           </p>
           <p className="text-sm text-brand-500">Esta ação não pode ser desfeita.</p>
-          <div className="flex gap-2 pt-4">
+          <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row">
             <button onClick={confirmDelete} className="btn-danger flex-1">
               Confirmar Exclusão
             </button>
-            <button onClick={() => setDeleteConfirm(null)} className="btn-secondary">
+            <button onClick={() => setDeleteConfirm(null)} className="btn-secondary sm:flex-1">
               Cancelar
             </button>
           </div>

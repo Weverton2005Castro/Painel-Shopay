@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
@@ -8,6 +9,13 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useDocumentMeta({
+    title: 'Acesso administrativo',
+    description: 'Área restrita do painel administrativo Shopay.',
+    path: '/admin',
+    noindex: true,
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +34,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-10">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="card w-full max-w-md p-6 sm:p-8">
         <p className="section-title text-center">Shopay • Administração</p>
         <h1 className="mb-6 text-center text-2xl font-bold text-brand-950">
@@ -75,12 +83,17 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <div className="mt-6 p-4 alert alert-info">
-          <p className="text-sm">
-            <strong>Credenciais de demonstração:</strong><br />
-            Usuário: admin<br />
-            Senha: admin123
-          </p>
+        <div className="mt-6 space-y-3">
+          <div className="p-4 alert alert-info">
+            <p className="text-sm">
+              <strong>Credenciais de demonstração:</strong><br />
+              Usuário: admin<br />
+              Senha: admin123
+            </p>
+          </div>
+          <Link to="/" className="block text-center text-sm font-semibold text-brand-500 transition-colors hover:text-brand-800">
+            ← Voltar à loja
+          </Link>
         </div>
       </div>
     </div>
