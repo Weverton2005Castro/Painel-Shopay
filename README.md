@@ -21,7 +21,7 @@ Vitrine virtual moderna e responsiva para divulgar produtos da Shopay como afili
 - **Sinalização automática** quando produto não tem link de afiliado válido
 
 ### Painel Administrativo
-- **Autenticação simples** com usuário e senha
+- **Autenticação via Supabase** com e-mail e senha
 - **CRUD completo** de produtos (criar, editar, excluir)
 - **Campos**: nome, descrição, preço, categoria, imagem, link de afiliado
 - **Destacar produtos** na página inicial
@@ -31,12 +31,6 @@ Vitrine virtual moderna e responsiva para divulgar produtos da Shopay como afili
 - **Importação/Exportação CSV** para gerenciar catálogo em massa
 - **Validação** de campos obrigatórios e URLs
 - **Confirmação** antes de excluir produtos
-
-### Dados e Persistência
-- **Sistema de persistência local** usando localStorage para desenvolvimento
-- **8 produtos demonstrativos** claramente identificados como exemplos
-- **Fácil substituição** dos exemplos por produtos reais
-- **Estrutura pronta** para integração com banco de dados em produção
 
 ### Transparência
 - **Aviso de afiliado** discreto no rodapé
@@ -62,14 +56,24 @@ npm run build
 npm run preview
 ```
 
-## 🔐 Acesso ao Painel Administrativo
+## Acesso ao painel administrativo
 
-1. Acesse `/admin` ou clique em "Admin" no menu de navegação
-2. Use as credenciais de demonstração:
-   - **Usuário**: `admin`
-   - **Senha**: `admin123`
+O painel usa Supabase Auth e exige a permissão `shopay_admin` em `app_metadata`.
 
-⚠️ **Importante**: Em produção, altere essas credenciais no arquivo `src/hooks/useAuth.tsx` e implemente um sistema de autenticação mais seguro.
+1. Crie a conta administrativa por e-mail em **Authentication → Users** no Supabase.
+2. No SQL Editor, atribua a permissão ao UUID dessa conta. Substitua o valor de exemplo pelo UUID conferido no painel.
+
+   ```sql
+   UPDATE auth.users
+   SET raw_app_meta_data = COALESCE(raw_app_meta_data, '{}'::jsonb)
+     || '{"shopay_admin": true}'::jsonb
+   WHERE id = '00000000-0000-0000-0000-000000000000';
+   ```
+
+3. Aplique `supabase/migrations/202611070001_protect_products.sql` no banco existente e teste o acesso em `/admin` com um novo login. Em um banco novo, execute `supabase-schema.sql`.
+4. Publique o frontend junto com a migração. Confira que o catálogo abre sem sessão e que apenas a conta administrativa pode ler produtos inativos ou alterar o catálogo.
+
+Revise políticas personalizadas existentes antes da migração, pois políticas permissivas adicionais podem conceder acesso por outras regras.
 
 ## 📦 Como cadastrar produtos e links de afiliado
 
@@ -91,48 +95,9 @@ npm run preview
 2. O arquivo deve ter as colunas: ID, Nome, Descrição, Preço, Categoria, URL Imagem, Link Afiliado, Destaque, Ativo
 3. Use "Exportar CSV" para ver o formato correto
 
-## 💾 Configuração de persistência em produção
+## Persistência
 
-### Atualmente (Desenvolvimento)
-O sistema usa **localStorage** do navegador para persistência. Isso é ideal para desenvolvimento e testes, mas os dados ficam apenas no navegador do usuário.
-
-### Para Produção - Opções:
-
-#### Opção 1: Supabase (Recomendado)
-1. Crie uma conta gratuita em [supabase.com](https://supabase.com)
-2. Crie um projeto e configure uma tabela `products` com os campos necessários
-3. Instale o cliente Supabase:
-   ```bash
-   npm install @supabase/supabase-js
-   ```
-4. Substitua o `storageService` em `src/utils/storage.ts` por chamadas à API do Supabase
-5. Configure variáveis de ambiente no `.env`:
-   ```
-   VITE_SUPABASE_URL=sua_url
-   VITE_SUPABASE_ANON_KEY=sua_chave
-   ```
-
-#### Opção 2: Firebase
-1. Crie um projeto no [Firebase Console](https://console.firebase.google.com)
-2. Configure Firestore Database
-3. Instale o Firebase SDK:
-   ```bash
-   npm install firebase
-   ```
-4. Substitua o `storageService` por chamadas ao Firestore
-5. Configure as credenciais no `.env`
-
-#### Opção 3: Backend Próprio
-1. Crie uma API REST com Node.js, Python ou outra tecnologia
-2. Implemente endpoints para CRUD de produtos
-3. Use fetch/axios no frontend para consumir a API
-4. Implemente autenticação JWT ou similar no backend
-
-### Migração de Dados
-Para migrar do localStorage para produção:
-1. Use "Exportar CSV" no painel administrativo
-2. Importe os dados no sistema de persistência escolhido
-3. Atualize o código para usar a nova solução
+O catálogo usa a tabela `products` do Supabase. Configure `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` para usar outro projeto.
 
 ## 🎨 Tecnologias Utilizadas
 
@@ -164,8 +129,7 @@ src/
 ├── types/           # Definições TypeScript
 │   └── index.ts
 ├── utils/           # Utilitários
-│   ├── storage.ts
-│   └── demoData.ts
+│   └── storage.ts
 ├── App.tsx          # Componente principal
 ├── main.tsx         # Entry point
 └── index.css        # Estilos globais
@@ -175,7 +139,6 @@ src/
 
 - **Não invente dados**: Use apenas informações reais dos produtos da Shopay
 - **Links de afiliado**: Configure os links corretos para que os botões de compra funcionem
-- **Segurança**: Em produção, implemente autenticação robusta e proteja as rotas administrativas
 - **Imagens**: Use URLs de imagens válidas e de alta qualidade
 - **Responsividade**: O design é otimizado para dispositivos móveis
 
@@ -183,8 +146,6 @@ src/
 
 - Cores e estilos: Edite `tailwind.config.js` e `src/index.css`
 - Categorias: Modifique o tipo `Category` em `src/types/index.ts`
-- Produtos demonstrativos: Edite `src/utils/demoData.ts`
-- Credenciais admin: Edite `src/hooks/useAuth.tsx`
 
 ## 📞 Suporte
 

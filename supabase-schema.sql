@@ -20,28 +20,23 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_active ON products(active);
 CREATE INDEX IF NOT EXISTS idx_products_featured ON products(featured);
 
--- Habilitar Row Level Security (RLS)
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
--- Criar política para permitir leitura pública
-CREATE POLICY "Permitir leitura pública de produtos"
-  ON products FOR SELECT
-  USING (true);
+DROP POLICY IF EXISTS "Permitir leitura pública de produtos" ON public.products;
+DROP POLICY IF EXISTS "Permitir inserção pública de produtos" ON public.products;
+DROP POLICY IF EXISTS "Permitir atualização pública de produtos" ON public.products;
+DROP POLICY IF EXISTS "Permitir exclusão pública de produtos" ON public.products;
 
--- Criar política para permitir inserção pública
-CREATE POLICY "Permitir inserção pública de produtos"
-  ON products FOR INSERT
-  WITH CHECK (true);
+DROP POLICY IF EXISTS "Ler produtos ativos" ON public.products;
+CREATE POLICY "Ler produtos ativos"
+  ON public.products FOR SELECT TO anon, authenticated
+  USING (active IS TRUE);
 
--- Criar política para permitir atualização pública
-CREATE POLICY "Permitir atualização pública de produtos"
-  ON products FOR UPDATE
-  USING (true);
-
--- Criar política para permitir exclusão pública
-CREATE POLICY "Permitir exclusão pública de produtos"
-  ON products FOR DELETE
-  USING (true);
+DROP POLICY IF EXISTS "Administrar produtos" ON public.products;
+CREATE POLICY "Administrar produtos"
+  ON public.products FOR ALL TO authenticated
+  USING ((SELECT auth.jwt()) -> 'app_metadata' -> 'shopay_admin' = 'true'::jsonb)
+  WITH CHECK ((SELECT auth.jwt()) -> 'app_metadata' -> 'shopay_admin' = 'true'::jsonb);
 
 -- Criar função para atualizar o campo updated_at automaticamente
 CREATE OR REPLACE FUNCTION update_updated_at_column()
