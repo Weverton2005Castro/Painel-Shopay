@@ -106,7 +106,7 @@ export default function Home() {
                 <span className="h-px w-8 bg-accent-400/70" />
                 vitrine de produtos selecionados
               </span>
-              <h1 className="brand-name text-4xl font-bold leading-[1.08] sm:text-5xl md:text-6xl">
+              <h1 className="brand-name text-4xl font-bold leading-[1.08] text-white sm:text-5xl md:text-6xl">
                 Descubra produtos que combinam com você
               </h1>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-brand-300 md:text-lg">
