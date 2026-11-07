@@ -32,6 +32,8 @@ export interface ProductFormData {
 export interface AuthContextType {
   authReady: boolean;
   isAuthenticated: boolean;
+  isPlatformAdmin: boolean;
+  userId?: string;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<boolean>;
 }

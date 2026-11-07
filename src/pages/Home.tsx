@@ -1,3 +1,4 @@
+import { useStorePath, useStore } from '../hooks/useStore';
 import { Link } from 'react-router-dom';
 import { ALL_CATEGORIES, CATEGORY_META } from '../utils/categories';
 import { partnerUrl } from '../utils/productPresentation';
@@ -9,19 +10,22 @@ import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { useStorefront } from '../hooks/useStorefront';
 
 export default function Home() {
+  const storePath = useStorePath();
+  const store = useStore();
   const { products, status, retry } = useStorefront();
 
   useDocumentMeta({
-    title: 'Shopay',
-    description: 'Explore a curadoria Shopay de perfumes, beleza, casa, acessórios e mais. Encontre produtos e confira os preços nas lojas parceiras.',
-    path: '/',
+    title: store.name,
+    description: store.description || `Explore o catálogo de ${store.name}.`,
+    path: storePath('/'),
+    siteName: store.name,
   });
 
   const featured = products.filter((product) => product.featured);
   const available = products.filter((product) => partnerUrl(product.affiliateLink));
   const collections = [
     {
-      title: 'Destaques da Shopay', label: 'Seleção da casa', to: '/catalog?featured=1',
+      title: 'Produtos em destaque', label: 'Seleção da casa', to: '/catalog?featured=1',
       products: featured.slice(0, 4),
     },
     {
@@ -36,19 +40,19 @@ export default function Home() {
         <div className="relative z-10 px-6 pt-8 sm:px-8 md:py-10 lg:px-14">
           <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold tracking-wide text-white">
             <span className="h-2 w-2 rounded-full bg-[#defb9e]" aria-hidden="true" />
-            A curadoria da Shopay
+            {store.name}
           </p>
           <h1 className="max-w-xl text-[2.1rem] font-extrabold leading-[1.03] tracking-[-0.055em] text-white sm:text-[2.6rem] lg:text-6xl">
             Bons achados para <span className="text-[#defb9e]">o seu dia a dia.</span>
           </h1>
           <p className="mt-5 max-w-md text-sm leading-relaxed text-[#e2daf8] sm:text-base">
-            Explore beleza, casa, acessórios e muito mais. Descubra produtos selecionados e confira as condições nas lojas parceiras.
+            {store.description || 'Explore o catálogo, descubra produtos selecionados e confira as condições de compra.'}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link to="/catalog" className="btn-primary !bg-[#defb9e] !text-[#202d1b] hover:!bg-white">
+            <Link to={storePath('/catalog')} className="btn-primary !bg-[#defb9e] !text-[#202d1b] hover:!bg-white">
               Explorar catálogo <span aria-hidden="true">↗</span>
             </Link>
-            <Link to="/catalog?sort=newest" className="btn-secondary !border-white/30 !bg-white/10 !text-white hover:!bg-white/20">
+            <Link to={storePath('/catalog?sort=newest')} className="btn-secondary !border-white/30 !bg-white/10 !text-white hover:!bg-white/20">
               Ver novidades
             </Link>
           </div>
@@ -58,7 +62,7 @@ export default function Home() {
 
       <div className="store-benefits grid divide-y divide-brand-200 rounded-2xl border border-brand-200 bg-white sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {[
-          ['sparkles', 'Curadoria Shopay', 'Produtos reunidos em um só lugar'],
+          ['sparkles', 'Produtos selecionados', 'Produtos reunidos em um só lugar'],
           ['grid', 'Encontre por categoria', 'Explore o catálogo no seu ritmo'],
           ['shopping-bag', 'Compra com o parceiro', 'Preço final e entrega na loja de destino'],
         ].map(([icon, title, description]) => (
@@ -79,7 +83,7 @@ export default function Home() {
           {ALL_CATEGORIES.map((category) => {
             const meta = CATEGORY_META[category];
             return (
-              <Link key={category} to={`/catalog?category=${encodeURIComponent(category)}`}
+              <Link key={category} to={storePath(`/catalog?category=${encodeURIComponent(category)}`)}
                 className="category-tile group flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-1 py-3 text-center text-xs font-bold">
                 <span className={`grid h-10 w-10 place-items-center rounded-xl ${meta.tile}`}>
                   <CategoryIcon icon={meta.icon} className="h-5 w-5" />
@@ -103,7 +107,7 @@ export default function Home() {
               <p className="section-title">{collection.label}</p>
               <h2 className="section-heading">{collection.title}</h2>
             </div>
-            <Link to={collection.to} className="text-sm font-bold text-accent-700 hover:underline">Ver todos <span aria-hidden="true">→</span></Link>
+            <Link to={storePath(collection.to)} className="text-sm font-bold text-accent-700 hover:underline">Ver todos <span aria-hidden="true">→</span></Link>
           </div>
           <div className="home-product-grid grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
             {collection.products.map((product) => <ProductCard key={product.id} product={product} />)}
@@ -111,7 +115,7 @@ export default function Home() {
         </section>
       ))}
       {available.length > 0 && (
-        <Link to="/catalog?partner=1&sort=price-asc" className="card flex items-center justify-between gap-4 p-5 font-bold text-accent-800 hover:border-accent-300">
+        <Link to={storePath('/catalog?partner=1&sort=price-asc')} className="card flex items-center justify-between gap-4 p-5 font-bold text-accent-800 hover:border-accent-300">
           Ver produtos com link de compra <span aria-hidden="true">→</span>
         </Link>
       )}

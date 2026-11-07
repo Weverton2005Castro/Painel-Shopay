@@ -1,3 +1,4 @@
+import { useStorePath, useStore } from '../hooks/useStore';
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Category } from '../types';
@@ -21,6 +22,8 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 ];
 
 export default function Catalog() {
+  const storePath = useStorePath();
+  const store = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const { products, status, retry } = useStorefront();
   const requestedCategory = searchParams.get('category') as Category;
@@ -33,8 +36,9 @@ export default function Catalog() {
   useDocumentMeta({
     title: 'Catálogo de produtos',
     description:
-      'Explore o catálogo completo da Shopay: perfumes, beleza, casa e utilidades, acessórios, cursos e muito mais. Filtre por categoria e ordene por preço.',
-    path: '/catalog',
+      `Explore o catálogo de ${store.name}. Filtre por categoria e ordene por preço.`,
+    path: storePath('/catalog'),
+    siteName: store.name,
   });
 
   const updateParams = (updates: Record<string, string | null>) => {
@@ -96,7 +100,7 @@ export default function Catalog() {
   return (
     <div className="container mx-auto px-4 py-10 sm:px-6">
       <div className="catalog-intro mb-6 rounded-[1.5rem] border border-accent-100 px-5 py-7 sm:px-8">
-        <p className="section-title">A vitrine Shopay</p>
+        <p className="section-title">{store.name}</p>
         <h1 className="section-heading break-words">
           {search ? `Resultados para “${search}”` : activeCategoryLabel || 'Catálogo de produtos'}
         </h1>

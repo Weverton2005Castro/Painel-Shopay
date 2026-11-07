@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Product, ProductFormData, Category } from '../types';
-import { storageService } from '../utils/storage';
+import { useStore } from '../hooks/useStore';
+import { storeProducts } from '../utils/storage';
+import StoreSettings from '../components/StoreSettings';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
 
 export default function AdminDashboard() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const store = useStore();
+  const [storeName, setStoreName] = useState(store.name);
+  const storageService = storeProducts(store.id);
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,6 +69,7 @@ export default function AdminDashboard() {
       setLoading(false);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
+      setError('Não foi possível carregar o catálogo desta loja.');
       setLoading(false);
     }
   };
@@ -153,12 +159,12 @@ export default function AdminDashboard() {
         setSuccess('Produto atualizado com sucesso!');
       } else {
         const newProduct: Product = {
-          id: `prod-${Date.now()}`,
+          id: crypto.randomUUID(),
           ...formData,
           createdAt: now,
           updatedAt: now
         };
-        await storageService.addProduct(newProduct);
+        await storageService.addProducts([newProduct]);
         setSuccess('Produto cadastrado com sucesso!');
       }
 
@@ -220,7 +226,7 @@ export default function AdminDashboard() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const text = event.target?.result as string;
         const lines = text.split('\n');
@@ -253,7 +259,7 @@ export default function AdminDashboard() {
 
           if (product.name && product.price > 0) {
             importedProducts.push({
-              id: product.id || `imported-${Date.now()}-${i}`,
+              id: crypto.randomUUID(),
               name: product.name,
               description: product.description || '',
               price: product.price,
@@ -268,7 +274,7 @@ export default function AdminDashboard() {
           }
         }
 
-        importedProducts.forEach(p => storageService.addProduct(p));
+        await storageService.addProducts(importedProducts);
         loadProducts();
         setSuccess(`${importedProducts.length} produtos importados com sucesso!`);
         setTimeout(() => setSuccess(''), 3000);
@@ -303,11 +309,17 @@ export default function AdminDashboard() {
   return (
     <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-brand-950 sm:text-3xl">Painel Administrativo</h1>
+        <h1 className="text-2xl font-bold text-brand-950 sm:text-3xl">{storeName}</h1>
+        <button className="btn-secondary mt-2" onClick={() => navigate('/admin/dashboard?lojas=1')}>Minhas lojas</button>
         <button onClick={handleLogout} className="btn-danger">
           Sair
         </button>
       </div>
+
+      <Link className="btn-secondary mb-4" to={store.slug === 'shopay' ? '/' : `/loja/${store.slug}`}>Abrir vitrine</Link>
+      <StoreSettings onRename={setStoreName} />
+
+      {!isModalOpen && error && <p role="alert" className="alert alert-danger mb-4">{error}</p>}
 
       {success && (
         <div className="alert alert-success mb-4">
@@ -354,7 +366,7 @@ export default function AdminDashboard() {
             <button onClick={() => handleOpenModal()} className="btn-primary">
               + Novo Produto
             </button>
-            <button onClick={() => navigate('/admin/images')} className="btn-secondary">
+            <button onClick={() => navigate(`/admin/lojas/${store.slug}/imagens`)} className="btn-secondary">
               Gerenciar Imagens
             </button>
             <button onClick={handleExportCSV} className="btn-secondary">

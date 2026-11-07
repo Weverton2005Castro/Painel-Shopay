@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Product } from '../types';
-import { storageService } from '../utils/storage';
+import { useStore } from './useStore';
+import { storeProducts } from '../utils/storage';
 
 export function useStorefront() {
+  const { id } = useStore();
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<{ products: Product[]; status: 'loading' | 'ready' | 'error' }>({
     products: [],
@@ -11,7 +13,7 @@ export function useStorefront() {
 
   useEffect(() => {
     const controller = new AbortController();
-    storageService.getPublicProducts(controller.signal).then(
+    storeProducts(id).getPublicProducts(controller.signal).then(
       (products) => {
         if (!controller.signal.aborted) setState({ products, status: 'ready' });
       },
@@ -20,7 +22,7 @@ export function useStorefront() {
       },
     );
     return () => controller.abort();
-  }, [attempt]);
+  }, [attempt, id]);
 
   return {
     ...state,

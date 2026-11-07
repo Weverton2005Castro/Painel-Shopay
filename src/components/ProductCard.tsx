@@ -1,3 +1,4 @@
+import { useStorePath } from '../hooks/useStore';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
 import ProductImage from './ProductImage';
@@ -9,13 +10,14 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const storePath = useStorePath();
   const meta = getCategoryMeta(product.category);
   const purchaseUrl = partnerUrl(product.affiliateLink);
 
   return (
     <article className="product-card card card-hover group flex h-full flex-col overflow-hidden">
       <Link
-        to={`/product/${product.id}`}
+        to={storePath(`/product/${product.id}`)}
         className="product-image relative block aspect-[4/3] overflow-hidden"
         aria-label={`Ver detalhes de ${product.name}`}
       >
@@ -43,7 +45,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </p>
         )}
         <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-brand-950 transition-colors group-hover:text-accent-700 sm:text-base">
-          <Link to={`/product/${product.id}`}>{product.name}</Link>
+          <Link to={storePath(`/product/${product.id}`)}>{product.name}</Link>
         </h3>
 
         <div className="mt-auto pt-3">
@@ -52,7 +54,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </p>
           <div className="mt-3 flex items-center gap-2">
             <Link
-              to={`/product/${product.id}`}
+              to={storePath(`/product/${product.id}`)}
               className="btn-secondary flex-1 justify-center !min-h-10 px-2 text-xs sm:text-sm"
             >
               Ver produto

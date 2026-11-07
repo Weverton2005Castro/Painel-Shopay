@@ -1,3 +1,4 @@
+import { useStorePath, useStore } from '../hooks/useStore';
 import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useStorefront } from '../hooks/useStorefront';
@@ -12,6 +13,8 @@ import JsonLd from '../components/JsonLd';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 export default function ProductDetail() {
+  const storePath = useStorePath();
+  const store = useStore();
   const { id } = useParams<{ id: string }>();
   const { products, status, retry } = useStorefront();
   const product = products.find((item) => item.id === id);
@@ -25,9 +28,10 @@ export default function ProductDetail() {
   useDocumentMeta({
     title: product ? product.name : 'Produto não encontrado',
     description: product
-      ? `${product.name}${product.brand ? ` — ${product.brand}` : ''}. ${product.description} Veja os detalhes na Shopay.`
-      : 'Produto não encontrado na Shopay.',
-    path: product ? `/product/${product.id}` : '/404',
+      ? `${product.name}${product.brand ? ` — ${product.brand}` : ''}. ${product.description} Veja os detalhes em ${store.name}.`
+      : 'Produto não encontrado.',
+    path: storePath(product ? `/product/${product.id}` : '/404'),
+    siteName: store.name,
     image: product?.imageUrl,
     type: 'product',
     noindex: !product,
@@ -63,7 +67,7 @@ export default function ProductDetail() {
       <div className="container mx-auto px-4 py-20 sm:px-6">
         <EmptyState message="Produto não encontrado ou indisponível no momento." />
         <div className="mt-6 text-center">
-          <Link to="/catalog" className="btn-primary">
+          <Link to={storePath('/catalog')} className="btn-primary">
             Ver catálogo completo
           </Link>
         </div>
@@ -77,9 +81,9 @@ export default function ProductDetail() {
 
       {/* Breadcrumb */}
       <nav aria-label="Trilha de navegação" className="mb-6 flex flex-wrap items-center gap-2 text-sm text-brand-500">
-        <Link to="/" className="transition-colors hover:text-brand-900">Início</Link>
+        <Link to={storePath('/')} className="transition-colors hover:text-brand-900">Início</Link>
         <span aria-hidden="true">/</span>
-        <Link to="/catalog" className="transition-colors hover:text-brand-900">Catálogo</Link>
+        <Link to={storePath('/catalog')} className="transition-colors hover:text-brand-900">Catálogo</Link>
         <span aria-hidden="true">/</span>
         <span className="max-w-[16rem] truncate font-semibold text-brand-800 sm:max-w-none">
           {product.name}
@@ -158,7 +162,7 @@ export default function ProductDetail() {
                 </div>
               )}
 
-              <Link to="/catalog" className="btn-ghost mt-4 w-full justify-center">
+              <Link to={storePath('/catalog')} className="btn-ghost mt-4 w-full justify-center">
                 ← Continuar explorando
               </Link>
             </div>
@@ -184,7 +188,7 @@ export default function ProductDetail() {
       )}
 
       {/* Transparência */}
-      <aside className="mt-14 rounded-2xl border border-brand-200 bg-brand-50/60 p-5 text-sm leading-relaxed text-brand-500">
+      {store.slug === 'shopay' && <aside className="mt-14 rounded-2xl border border-brand-200 bg-brand-50/60 p-5 text-sm leading-relaxed text-brand-500">
         <p>
           <strong className="text-brand-700">Transparência:</strong> a Shopay é uma loja de
           afiliados. Alguns links desta página são links de afiliado — podemos receber uma
@@ -192,7 +196,7 @@ export default function ProductDetail() {
           para você. O pedido, o pagamento e o atendimento são processados diretamente pela
           plataforma de destino.
         </p>
-      </aside>
+      </aside>}
     </div>
   );
 }

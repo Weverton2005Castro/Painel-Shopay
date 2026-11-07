@@ -56,24 +56,48 @@ npm run build
 npm run preview
 ```
 
-## Acesso ao painel administrativo
+## Configuração de várias lojas no Supabase
 
-O painel usa Supabase Auth e exige a permissão `shopay_admin` em `app_metadata`.
+No banco que já tem a tabela `public.products`, execute o arquivo inteiro
+[`202611070002_multi_store.sql`](supabase/migrations/202611070002_multi_store.sql)
+uma vez no **SQL Editor**. Em um banco novo, execute primeiro `supabase-schema.sql`.
 
-1. Crie a conta administrativa por e-mail em **Authentication → Users** no Supabase.
-2. No SQL Editor, atribua a permissão ao UUID dessa conta. Substitua o valor de exemplo pelo UUID conferido no painel.
+A migração cria a loja Shopay, vincula a ela os produtos existentes e mantém seus IDs.
+Ela substitui as políticas RLS anteriores de `products`, inclusive políticas personalizadas,
+para que regras antigas não permitam alterações entre lojas. Revise regras personalizadas
+antes de executar. Publique a versão nova do frontend junto com a migração, pois
+novos produtos exigem o identificador da loja.
 
-   ```sql
-   UPDATE auth.users
-   SET raw_app_meta_data = COALESCE(raw_app_meta_data, '{}'::jsonb)
-     || '{"shopay_admin": true}'::jsonb
-   WHERE id = '00000000-0000-0000-0000-000000000000';
-   ```
+### Conta da plataforma
 
-3. Aplique `supabase/migrations/202611070001_protect_products.sql` no banco existente e teste o acesso em `/admin` com um novo login. Em um banco novo, execute `supabase-schema.sql`.
-4. Publique o frontend junto com a migração. Confira que o catálogo abre sem sessão e que apenas a conta administrativa pode ler produtos inativos ou alterar o catálogo.
+A conta que tem `shopay_admin: true` em `app_metadata` gerencia todas as lojas.
+Se essa conta já estiver configurada, basta entrar novamente. Caso contrário,
+crie ou identifique sua conta em **Authentication → Users**. Execute a query abaixo,
+substituindo o UUID de exemplo pelo UUID da sua conta.
 
-Revise políticas personalizadas existentes antes da migração, pois políticas permissivas adicionais podem conceder acesso por outras regras.
+```sql
+UPDATE auth.users
+SET raw_app_meta_data = COALESCE(raw_app_meta_data, '{}'::jsonb)
+  || '{"shopay_admin": true}'::jsonb
+WHERE id = '00000000-0000-0000-0000-000000000000'::uuid;
+```
+
+Saia e entre novamente em `/admin` para renovar a sessão após atribuir a permissão.
+Reserve essa permissão para quem administra a plataforma.
+
+### Cadastro de loja e acesso do responsável
+
+1. Entre em `/admin`, cadastre uma loja com nome e endereço e clique em **Gerenciar**.
+2. Em **Configurações da loja**, registre o e-mail do responsável e compartilhe o link `/admin` com ele.
+3. O responsável entra com a própria conta. Se for a primeira vez, usa **Recebi um convite e quero criar minha conta** e confirma o e-mail. Ao entrar, o convite é vinculado à conta com aquele endereço verificado.
+4. Com uma loja ativa, o painel abre diretamente. Com várias, o responsável escolhe qual gerenciar. A vitrine pública usa `/loja/<endereço>` e a Shopay também continua acessível na raiz.
+
+Para o cadastro pelo site, habilite o provedor de e-mail e **Confirm email** no
+Supabase Auth. Em **URL Configuration**, configure a URL pública do site e permita
+o redirecionamento para `https://seu-dominio/admin`. Configure e teste a entrega
+dos e-mails de confirmação no ambiente que os clientes usarão. O painel registra
+os convites e exibe o link para compartilhar. O Supabase envia a confirmação
+quando um responsável cria a conta.
 
 ## 📦 Como cadastrar produtos e links de afiliado
 

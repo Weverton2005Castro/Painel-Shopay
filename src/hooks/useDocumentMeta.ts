@@ -6,6 +6,7 @@ const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
 interface MetaOptions {
   title: string;
+  siteName?: string;
   description: string;
   path: string;
   image?: string;
@@ -35,6 +36,7 @@ function upsertLink(rel: string, href: string) {
 
 export function useDocumentMeta({
   title,
+  siteName = SITE_NAME,
   description,
   path,
   image,
@@ -42,7 +44,7 @@ export function useDocumentMeta({
   noindex = false,
 }: MetaOptions) {
   useEffect(() => {
-    const fullTitle = title === SITE_NAME ? title : `${title} | ${SITE_NAME}`;
+    const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
     const url = `${SITE_URL}${path}`;
     const imageUrl = image || DEFAULT_IMAGE;
 
@@ -53,7 +55,7 @@ export function useDocumentMeta({
     upsertMeta('name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow');
 
     upsertMeta('property', 'og:type', type);
-    upsertMeta('property', 'og:site_name', SITE_NAME);
+    upsertMeta('property', 'og:site_name', siteName);
     upsertMeta('property', 'og:title', fullTitle);
     upsertMeta('property', 'og:description', description);
     upsertMeta('property', 'og:url', url);
@@ -66,5 +68,5 @@ export function useDocumentMeta({
     upsertMeta('name', 'twitter:image', imageUrl);
 
     upsertLink('canonical', url);
-  }, [title, description, path, image, type, noindex]);
+  }, [title, siteName, description, path, image, type, noindex]);
 }

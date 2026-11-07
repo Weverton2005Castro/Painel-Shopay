@@ -22,11 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return false;
-    if (isAdmin(data.session)) return true;
-    await supabase.auth.signOut({ scope: 'local' });
-    return false;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return !error;
   }
 
   async function logout() {
@@ -35,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ authReady, isAuthenticated: isAdmin(session), login, logout }}>
+    <AuthContext.Provider value={{ authReady, isAuthenticated: !!session, isPlatformAdmin: isAdmin(session), userId: session?.user.id, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

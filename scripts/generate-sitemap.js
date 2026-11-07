@@ -26,7 +26,7 @@ async function generateSitemap() {
   try {
     const { data: products, error } = await supabase
       .from('products')
-      .select('id, updated_at')
+      .select('id, updated_at, stores!inner(slug)')
       .eq('active', true)
       .order('updated_at', { ascending: false });
 
@@ -56,21 +56,28 @@ async function generateSitemap() {
 
     // URLs de produtos
     const productUrls = products.map(product => ({
-      loc: `${SITE_URL}/product/${product.id}`,
+      loc: `${SITE_URL}${product.stores.slug === 'shopay' ? '' : `/loja/${product.stores.slug}`}/product/${encodeURIComponent(product.id)}`,
       lastmod: formatDate(product.updated_at),
       changefreq: 'weekly',
       priority: '0.8'
     }));
 
+    const storeUrls = [...new Set(products.map((product) => product.stores.slug))]
+      .filter((slug) => slug !== 'shopay')
+      .flatMap((slug) => [
+        { loc: `${SITE_URL}/loja/${slug}`, changefreq: 'weekly', priority: '0.9' },
+        { loc: `${SITE_URL}/loja/${slug}/catalog`, changefreq: 'weekly', priority: '0.8' },
+      ]);
+
     // Combinar todas as URLs
-    const allUrls = [...staticUrls, ...productUrls];
+    const allUrls = [...staticUrls, ...storeUrls, ...productUrls];
 
     // Gerar XML
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allUrls.map(url => `  <url>
     <loc>${url.loc}</loc>
-    <lastmod>${url.lastmod}</lastmod>
+    ${url.lastmod ? `<lastmod>${url.lastmod}</lastmod>` : ''}
     <changefreq>${url.changefreq}</changefreq>
     <priority>${url.priority}</priority>
   </url>`).join('\n')}

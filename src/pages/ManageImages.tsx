@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
-import { storageService } from '../utils/storage';
+import { useStore } from '../hooks/useStore';
+import { storeProducts } from '../utils/storage';
 import EmptyState from '../components/EmptyState';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Modal from '../components/Modal';
@@ -18,6 +19,8 @@ interface BatchImportItem {
 
 export default function ManageImages() {
   const navigate = useNavigate();
+  const store = useStore();
+  const storageService = storeProducts(store.id);
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -337,7 +340,7 @@ export default function ManageImages() {
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <button
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => navigate(`/admin/lojas/${store.slug}`)}
             className="text-accent-600 hover:text-accent-700 mb-2 inline-flex items-center gap-2 text-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
