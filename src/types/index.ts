@@ -30,9 +30,10 @@ export interface ProductFormData {
 }
 
 export interface AuthContextType {
+  authReady: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<boolean>;
 }
 
 export interface FilterOptions {

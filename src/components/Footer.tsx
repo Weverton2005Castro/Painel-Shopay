@@ -14,8 +14,7 @@ export default function Footer() {
               <span className="brand-name text-xl font-bold">Shopay</span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-brand-400">
-              Sua vitrine digital de produtos selecionados. Descubra novidades, ofertas e
-              produtos de qualidade em um só lugar.
+              Descubra produtos selecionados para o seu dia a dia e confira as condições nas lojas parceiras.
             </p>
           </div>
 
@@ -53,12 +52,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/#ofertas" className="text-sm text-brand-400 transition-colors hover:text-white">
-                  Ofertas
+                <Link to="/catalog?partner=1&sort=price-asc" className="text-sm text-brand-400 transition-colors hover:text-white">
+                  Com link de compra
                 </Link>
               </li>
               <li>
-                <Link to="/#novidades" className="text-sm text-brand-400 transition-colors hover:text-white">
+                <Link to="/catalog?sort=newest" className="text-sm text-brand-400 transition-colors hover:text-white">
                   Novidades
                 </Link>
               </li>
@@ -80,10 +79,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-brand-800 pt-7 sm:flex-row">
-          <p className="text-sm text-brand-500">
+          <p className="text-sm text-brand-300">
             © {new Date().getFullYear()} Shopay. Todos os direitos reservados.
           </p>
-          <p className="text-xs text-brand-500">
+          <p className="text-xs text-brand-300">
             Afiliado: Weverton De Castro Blanco · wblanco846@gmail.com
           </p>
         </div>

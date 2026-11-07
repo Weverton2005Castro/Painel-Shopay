@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
 
   useDocumentMeta({
     title: 'Acesso administrativo',
@@ -17,19 +17,19 @@ export default function AdminLogin() {
     noindex: true,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  if (isAuthenticated) return <Navigate to="/admin/dashboard" replace />;
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     setError('');
-
-    if (!username || !password) {
-      setError('Por favor, preencha todos os campos.');
-      return;
-    }
-
-    if (login(username, password)) {
-      navigate('/admin/dashboard');
-    } else {
-      setError('Usuário ou senha incorretos.');
+    try {
+      if (!(await login(email.trim(), password))) setError('Não foi possível entrar com essas credenciais.');
+    } catch {
+      setError('Não foi possível acessar o painel. Tente novamente.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -42,24 +42,25 @@ export default function AdminLogin() {
         </h1>
 
         {error && (
-          <div className="alert alert-danger mb-4">
+          <div role="alert" className="alert alert-danger mb-4">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="admin-username" className="input-label">
-              Usuário
+            <label htmlFor="admin-email" className="input-label">
+              E-mail
             </label>
             <input
-              type="text"
-              id="admin-username"
+              type="email"
+              required
+              id="admin-email"
               autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="input-field"
-              placeholder="Digite seu usuário"
+              placeholder="E-mail da conta administrativa"
             />
           </div>
 
@@ -69,6 +70,7 @@ export default function AdminLogin() {
             </label>
             <input
               type="password"
+              required
               id="admin-password"
               autoComplete="current-password"
               value={password}
@@ -78,19 +80,12 @@ export default function AdminLogin() {
             />
           </div>
 
-          <button type="submit" className="btn-primary w-full">
-            Entrar
+          <button type="submit" disabled={submitting} className="btn-primary w-full">
+            {submitting ? 'Entrando…' : 'Entrar'}
           </button>
         </form>
 
         <div className="mt-6 space-y-3">
-          <div className="p-4 alert alert-info">
-            <p className="text-sm">
-              <strong>Credenciais de demonstração:</strong><br />
-              Usuário: admin<br />
-              Senha: admin123
-            </p>
-          </div>
           <Link to="/" className="block text-center text-sm font-semibold text-brand-500 transition-colors hover:text-brand-800">
             ← Voltar à loja
           </Link>

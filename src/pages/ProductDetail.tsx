@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Product } from '../types';
-import { storageService } from '../utils/storage';
+import { useStorefront } from '../hooks/useStorefront';
+import CatalogError from '../components/CatalogError';
+import { formatPrice, partnerUrl } from '../utils/productPresentation';
 import { getCategoryMeta } from '../utils/categories';
 import ProductCard from '../components/ProductCard';
 import ProductImage from '../components/ProductImage';
@@ -10,44 +11,21 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import JsonLd from '../components/JsonLd';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
-const SITE_URL = 'https://painel-shopay.vercel.app';
-
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [related, setRelated] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const products = await storageService.getProducts();
-        const found = products.find((p) => p.id === id && p.active) || null;
-        setProduct(found);
-        setNotFound(!found);
-        if (found) {
-          setRelated(
-            products
-              .filter((p) => p.active && p.id !== found.id && p.category === found.category)
-              .slice(0, 4)
-          );
-        }
-      } catch (error) {
-        console.error('Erro ao carregar produto:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [id]);
+  const { products, status, retry } = useStorefront();
+  const product = products.find((item) => item.id === id);
+  const related = product
+    ? products.filter((item) => item.id !== id && item.category === product.category).slice(0, 4)
+    : [];
+  const purchaseUrl = partnerUrl(product?.affiliateLink);
 
   const meta = product ? getCategoryMeta(product.category) : null;
 
   useDocumentMeta({
     title: product ? product.name : 'Produto não encontrado',
     description: product
-      ? `${product.name}${product.brand ? ` — ${product.brand}` : ''}. ${product.description} Compre na Shopay.`
+      ? `${product.name}${product.brand ? ` — ${product.brand}` : ''}. ${product.description} Veja os detalhes na Shopay.`
       : 'Produto não encontrado na Shopay.',
     path: product ? `/product/${product.id}` : '/404',
     image: product?.imageUrl,
@@ -65,21 +43,22 @@ export default function ProductDetail() {
       image: product.imageUrl || undefined,
       brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
       category: product.category,
-      offers: {
+      offers: purchaseUrl ? {
         '@type': 'Offer',
-        url: `${SITE_URL}/product/${product.id}`,
+        url: purchaseUrl,
         priceCurrency: 'BRL',
         price: product.price.toFixed(2),
-        availability: 'https://schema.org/InStock',
-      },
+      } : undefined,
     };
-  }, [product]);
+  }, [product, purchaseUrl]);
 
-  if (loading) {
+  if (status === 'loading') {
     return <LoadingSpinner />;
   }
 
-  if (notFound || !product) {
+  if (status === 'error') return <CatalogError retry={retry} />;
+
+  if (!product) {
     return (
       <div className="container mx-auto px-4 py-20 sm:px-6">
         <EmptyState message="Produto não encontrado ou indisponível no momento." />
@@ -91,8 +70,6 @@ export default function ProductDetail() {
       </div>
     );
   }
-
-  const hasValidLink = !!product.affiliateLink && product.affiliateLink.trim() !== '';
 
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6">
@@ -116,7 +93,7 @@ export default function ProductDetail() {
             <ProductImage
               src={product.imageUrl}
               alt={product.name}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-contain p-5 sm:p-8"
             />
             {product.featured && (
               <span className="absolute left-4 top-4 rounded-full bg-brand-950/90 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-accent-200 backdrop-blur">
@@ -145,29 +122,29 @@ export default function ProductDetail() {
 
             <div className="mt-5">
               <p className="text-3xl font-bold text-brand-950 sm:text-4xl">
-                R$ {product.price.toFixed(2).replace('.', ',')}
+                {formatPrice(product.price)}
               </p>
-              <p className="mt-1 text-xs text-brand-400">Preço em reais (BRL)</p>
+              <p className="mt-1 text-xs text-brand-400">Preço exibido na vitrine</p>
             </div>
 
             <p className="mt-6 text-base leading-relaxed text-brand-600">{product.description}</p>
 
             <div className="mt-auto pt-8">
-              {hasValidLink ? (
+              {purchaseUrl ? (
                 <>
                   <a
-                    href={product.affiliateLink}
+                    href={purchaseUrl}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="sponsored noopener noreferrer"
                     className="btn-accent btn-lg w-full justify-center text-base"
                   >
-                    Comprar agora
+                    Ver na loja parceira
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                   </a>
                   <p className="mt-3 text-center text-xs text-brand-400">
-                    Você será direcionado à plataforma parceira para concluir a compra.
+                    Confira o preço final, a disponibilidade e o frete na loja parceira.
                   </p>
                 </>
               ) : (

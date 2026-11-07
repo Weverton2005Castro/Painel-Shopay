@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import { Product } from '../types';
 import { storageService } from '../utils/storage';
 import EmptyState from '../components/EmptyState';
@@ -18,7 +17,6 @@ interface BatchImportItem {
 }
 
 export default function ManageImages() {
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -45,12 +43,8 @@ export default function ManageImages() {
   const [validatedItems, setValidatedItems] = useState<BatchImportItem[]>([]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/admin');
-      return;
-    }
     loadProducts();
-  }, [isAuthenticated, navigate]);
+  }, []);
 
   useEffect(() => {
     let result = [...products];

@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Product, Category } from '../types';
-import { storageService } from '../utils/storage';
+import { Category } from '../types';
+import { useStorefront } from '../hooks/useStorefront';
+import CatalogError from '../components/CatalogError';
+import { partnerUrl, searchKey } from '../utils/productPresentation';
 import { ALL_CATEGORIES, CATEGORY_META } from '../utils/categories';
 import ProductCard from '../components/ProductCard';
 import EmptyState from '../components/EmptyState';
@@ -20,14 +22,13 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 export default function Catalog() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
-
-  const category = (searchParams.get('category') as Category) || '';
-  const search = searchParams.get('search') || '';
-  const sortBy = (searchParams.get('sort') as SortOption) || 'name';
+  const { products, status, retry } = useStorefront();
+  const requestedCategory = searchParams.get('category') as Category;
+  const category = ALL_CATEGORIES.includes(requestedCategory) ? requestedCategory : '';
+  const search = searchParams.get('search')?.trim() || '';
+  const sortBy = SORT_OPTIONS.find(({ value }) => value === searchParams.get('sort'))?.value ?? 'name';
   const featuredOnly = searchParams.get('featured') === '1';
+  const partnerOnly = searchParams.get('partner') === '1';
 
   useDocumentMeta({
     title: 'Catálogo de produtos',
@@ -36,37 +37,13 @@ export default function Catalog() {
     path: '/catalog',
   });
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const loaded = await storageService.getProducts();
-        setProducts(loaded.filter((p) => p.active));
-      } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
-
-  // Sincroniza o campo de busca com o parâmetro da URL (ex.: vindo do header)
-  useEffect(() => {
-    setSearchInput(searchParams.get('search') || '');
-  }, [searchParams]);
-
   const updateParams = (updates: Record<string, string | null>) => {
     const next = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, value]) => {
       if (value === null || value === '') next.delete(key);
       else next.set(key, value);
     });
-    setSearchParams(next, { replace: true });
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateParams({ search: searchInput.trim() || null });
+    setSearchParams(next);
   };
 
   const filteredProducts = useMemo(() => {
@@ -78,15 +55,15 @@ export default function Catalog() {
     if (featuredOnly) {
       result = result.filter((p) => p.featured);
     }
+    if (partnerOnly) {
+      result = result.filter((product) => partnerUrl(product.affiliateLink));
+    }
     if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          (p.brand && p.brand.toLowerCase().includes(q)) ||
-          p.category.toLowerCase().includes(q)
-      );
+      const terms = searchKey(search).split(/\s+/);
+      result = result.filter((product) => {
+        const index = searchKey([product.name, product.brand, product.category, product.description].join(' '));
+        return terms.every((term) => index.includes(term));
+      });
     }
 
     switch (sortBy) {
@@ -106,27 +83,22 @@ export default function Catalog() {
     }
 
     return result;
-  }, [products, category, search, sortBy, featuredOnly]);
+  }, [products, category, search, sortBy, featuredOnly, partnerOnly]);
 
-  const hasActiveFilters = !!category || !!search || featuredOnly || sortBy !== 'name';
+  const hasActiveFilters = !!category || !!search || featuredOnly || partnerOnly || sortBy !== 'name';
 
   const clearFilters = () => {
-    setSearchInput('');
-    setSearchParams({}, { replace: true });
+    setSearchParams({});
   };
 
   const activeCategoryLabel = category ? CATEGORY_META[category]?.label || category : null;
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
   return (
     <div className="container mx-auto px-4 py-10 sm:px-6">
-      <div className="section-header">
+      <div className="catalog-intro mb-6 rounded-[1.5rem] border border-accent-100 px-5 py-7 sm:px-8">
         <p className="section-title">A vitrine Shopay</p>
-        <h1 className="section-heading">
-          {activeCategoryLabel ? activeCategoryLabel : 'Catálogo de produtos'}
+        <h1 className="section-heading break-words">
+          {search ? `Resultados para “${search}”` : activeCategoryLabel || 'Catálogo de produtos'}
         </h1>
         <p className="mt-2 text-brand-500">
           {activeCategoryLabel
@@ -135,53 +107,11 @@ export default function Catalog() {
         </p>
       </div>
 
-      {/* Busca */}
-      <form onSubmit={handleSearchSubmit} role="search" className="mb-5">
-        <div className="relative">
-          <input
-            type="text"
-            aria-label="Buscar no catálogo"
-            placeholder="Buscar por nome, marca ou descrição..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="input-field !pl-11"
-          />
-          <svg
-            className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          {searchInput && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchInput('');
-                updateParams({ search: null });
-              }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-brand-400 hover:bg-brand-100 hover:text-brand-700"
-              aria-label="Limpar busca"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
-      </form>
-
       {/* Chips de categoria */}
       <div className="mb-5 flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="Filtrar por categoria">
         <button
           type="button"
+          aria-pressed={!category}
           onClick={() => updateParams({ category: null })}
           className={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition-colors ${
             !category
@@ -198,6 +128,7 @@ export default function Catalog() {
             <button
               key={cat}
               type="button"
+              aria-pressed={active}
               onClick={() => updateParams({ category: active ? null : cat })}
               className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-colors ${
                 active
@@ -224,9 +155,14 @@ export default function Catalog() {
             />
             Apenas destaques
           </label>
-          <span className="text-sm font-semibold text-brand-600" aria-live="polite">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-brand-700">
+            <input type="checkbox" checked={partnerOnly} onChange={(event) => updateParams({ partner: event.target.checked ? '1' : null })}
+              className="h-4 w-4 accent-accent-700" />
+            Com link de compra
+          </label>
+          {status === 'ready' && <span className="text-sm font-semibold text-brand-600" aria-live="polite">
             {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
-          </span>
+          </span>}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -254,7 +190,7 @@ export default function Catalog() {
       </div>
 
       {/* Grid */}
-      {filteredProducts.length > 0 ? (
+      {status === 'loading' ? <LoadingSpinner /> : status === 'error' ? <CatalogError retry={retry} /> : filteredProducts.length > 0 ? (
         <div className="product-grid grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
@@ -262,7 +198,7 @@ export default function Catalog() {
         </div>
       ) : (
         <div className="card p-6">
-          <EmptyState message="Nenhum produto encontrado com os filtros selecionados." />
+          <EmptyState message={hasActiveFilters ? "Nenhum produto corresponde aos filtros selecionados." : "Ainda não há produtos publicados no catálogo."} />
           {hasActiveFilters && (
             <div className="-mt-6 pb-4 text-center">
               <button type="button" onClick={clearFilters} className="btn-secondary">

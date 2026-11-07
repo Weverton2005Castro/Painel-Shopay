@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,11 +8,11 @@
   :root {
     color-scheme: light;
     --font-sans: 'DM Sans', system-ui, sans-serif;
-    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-serif: 'DM Sans', system-ui, sans-serif;
     --color-background: #faf9f6;
     --color-surface: #fff;
-    --color-border: #e8e4d8;
-    --color-text: #1f1e1c;
+    --color-border: #e3e0ee;
+    --color-text: #201635;
     --color-muted: #716c64;
     --color-accent: #8b6842;
     --shadow-card: 0 1px 3px rgb(31 30 28 / 5%), 0 1px 2px rgb(31 30 28 / 3%);
@@ -78,13 +78,13 @@
   }
 
   :focus-visible {
-    outline: 3px solid rgb(154 118 76 / 42%);
+    outline: 3px solid rgb(113 78 203 / 42%);
     outline-offset: 2px;
   }
 
   ::selection {
-    background: #e6dcc8;
-    color: #1f1e1c;
+    background: #e0d6ff;
+    color: #201635;
   }
 }
 
@@ -241,38 +241,25 @@
   backdrop-filter: blur(12px);
 }
 
-.hero-panel {
-  position: relative;
-  overflow: hidden;
-  background: #292824;
+.store-hero {
+  background: radial-gradient(ellipse at 82% 38%, #583b9b 0%, transparent 65%),
+    linear-gradient(110deg, #211438 18%, #392167 100%);
 }
 
-.hero-panel::before {
-  position: absolute;
-  top: -22rem;
-  right: -12rem;
-  width: 42rem;
-  height: 42rem;
-  border: 1px solid rgb(230 220 200 / 16%);
-  border-radius: 50%;
-  content: '';
-  pointer-events: none;
+.store-benefits {
+  margin-top: 1rem;
 }
 
-.hero-panel::after {
-  position: absolute;
-  top: -16rem;
-  right: -6rem;
-  width: 30rem;
-  height: 30rem;
-  border: 1px solid rgb(230 220 200 / 12%);
-  border-radius: 50%;
-  content: '';
-  pointer-events: none;
+.catalog-intro {
+  background: linear-gradient(105deg, #efebff, #fff 90%);
 }
 
-.hero-glow {
-  background: #292824;
+.department-link {
+  @apply inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 font-semibold text-brand-700 hover:bg-accent-50 hover:text-accent-800;
+}
+
+.department-link[aria-current="page"] {
+  @apply bg-accent-100 text-accent-800;
 }
 
 .category-tile,
@@ -282,13 +269,13 @@
 
 .category-tile:hover,
 .product-card:hover {
-  border-color: #d4c6ad;
+  border-color: #cabbff;
   box-shadow: var(--shadow-card-hover);
   transform: translateY(-2px);
 }
 
 .product-image {
-  background: #f2f0eb;
+  background: #f6f4fa;
 }
 
 .product-image img {
@@ -315,11 +302,6 @@
   .table-cell,
   .table-header-cell {
     padding: 0.75rem;
-  }
-
-  .hero-panel .container {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
   }
 
   .admin-actions {

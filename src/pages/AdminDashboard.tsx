@@ -7,7 +7,7 @@ import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
 
 export default function AdminDashboard() {
-  const { isAuthenticated, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -36,12 +36,8 @@ export default function AdminDashboard() {
   const categories: Category[] = ['Perfumes', 'Casa e Utilidades', 'Beleza', 'Acessórios', 'Cursos', 'Alimentos', 'Papelaria', 'Serviços', 'Cosméticos', 'Outros'];
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/admin');
-      return;
-    }
     loadProducts();
-  }, [isAuthenticated, navigate]);
+  }, []);
 
   useEffect(() => {
     let filtered = products;
@@ -72,9 +68,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/admin');
+  const handleLogout = async () => {
+    if (await logout()) navigate('/admin', { replace: true });
+    else setError('Não foi possível encerrar a sessão. Tente novamente.');
   };
 
   const handleOpenModal = (product?: Product) => {

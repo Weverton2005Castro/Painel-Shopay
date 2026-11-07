@@ -6,7 +6,7 @@ const mapFromSupabase = (data: any): Product => ({
   id: data.id,
   name: data.name,
   description: data.description,
-  price: data.price,
+  price: Number(data.price),
   category: data.category,
   imageUrl: data.image_url,
   affiliateLink: data.affiliate_link,
@@ -19,6 +19,24 @@ const mapFromSupabase = (data: any): Product => ({
 });
 
 export const storageService = {
+  async getPublicProducts(signal: AbortSignal): Promise<Product[]> {
+    const products: Product[] = [];
+    const pageSize = 500;
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id,name,description,price,category,image_url,affiliate_link,featured,active,brand,created_at,updated_at')
+        .eq('active', true)
+        .order('created_at', { ascending: false })
+        .order('id')
+        .range(offset, offset + pageSize - 1)
+        .abortSignal(signal);
+      if (error) throw error;
+      products.push(...data.map(mapFromSupabase));
+      if (data.length < pageSize) return products;
+    }
+  },
+
   getProducts: async (): Promise<Product[]> => {
     try {
       const { data, error } = await supabase
