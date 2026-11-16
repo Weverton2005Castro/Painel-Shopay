@@ -1,6 +1,6 @@
 import { useStorePath, useStore } from '../hooks/useStore';
 import { Link } from 'react-router-dom';
-import { ALL_CATEGORIES, CATEGORY_META } from '../utils/categories';
+import { categoryPath, ALL_CATEGORIES, CATEGORY_META } from '../utils/categories';
 import { partnerUrl } from '../utils/productPresentation';
 import ProductCard from '../components/ProductCard';
 import CategoryIcon from '../components/CategoryIcon';
@@ -83,7 +83,7 @@ export default function Home() {
           {ALL_CATEGORIES.map((category) => {
             const meta = CATEGORY_META[category];
             return (
-              <Link key={category} to={storePath(`/catalog?category=${encodeURIComponent(category)}`)}
+              <Link key={category} to={storePath(categoryPath(category))}
                 className="category-tile group flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-white px-1 py-3 text-center text-xs font-bold">
                 <span className={`grid h-10 w-10 place-items-center rounded-xl ${meta.tile}`}>
                   <CategoryIcon icon={meta.icon} className="h-5 w-5" />

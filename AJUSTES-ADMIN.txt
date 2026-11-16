@@ -1,0 +1,177 @@
+================================================================================
+PAINEL SHOPAY - PONTOS DE AJUSTE NA PARTE ADMINISTRATIVA
+Data da análise: 09/11/2026
+================================================================================
+
+COMO FUNCIONA HOJE (resumo)
+--------------------------------------------------------------------------------
+- Autenticação via Supabase Auth (e-mail/senha) em /admin.
+- Dois níveis de acesso definidos no banco:
+  * Admin da plataforma: app_metadata.shopay_admin = true no JWT.
+  * Membro de loja: tabela store_members, liberado por convite prévio em
+    store_invitations (claim automático via RPC claim_store_invitations,
+    que exige e-mail confirmado).
+- Isolamento multi-loja via RLS em stores, store_members, store_invitations
+  e products. Funções SECURITY DEFINER (can_manage_store,
+  update_store_profile, store_access_list) centralizam permissões.
+- UPDATE em products é por coluna (store_id não pode ser alterado).
+- AdminGuard no frontend só exige sessão; a autorização real é o RLS/RPC.
+
+PONTOS FORTES (manter)
+--------------------------------------------------------------------------------
+- Modelo multi-tenant bem feito: loja suspensa bloqueia membros mas não o
+  admin da plataforma.
+- claim_store_invitations é transacional e só aceita e-mail confirmado.
+- Paginação em loop na listagem de produtos e AbortController contra races.
+- Política pública de products exige produto ativo E loja ativa.
+- REVOKE/GRANT bem cuidados nas funções e tabelas.
+
+================================================================================
+PRIORIDADE ALTA
+================================================================================
+
+[ ] 1. VAZAMENTO DA COLUNA "commission"
+    Problema: GRANT SELECT ON products TO anon libera a linha inteira.
+    A policy products_public não restringe colunas — qualquer anon pode
+    chamar select commission, store_id from products na API e ver a
+    comissão de todos os produtos.
+    O frontend não seleciona o campo (publicFields), mas isso é só
+    cosmético — a API expõe o dado.
+    Arquivo: supabase/migrations/202611070002_multi_store.sql
+    Sugestão: REVOKE SELECT (commission) ... ou criar view products_public
+    sem a coluna e revogar SELECT direto na tabela para anon.
+
+[ ] 2. IMPORTAÇÃO/EXPORTAÇÃO CSV FRÁGIL
+    Arquivo: src/pages/AdminDashboard.tsx (handleImportCSV ~linha 224,
+    handleExportCSV ~linha 198)
+    Problemas:
+    - split(',') quebra com vírgulas dentro de campos entre aspas;
+      a exportação também não escapa aspas nos valores ("${cell}").
+      Round-trip CSV -> CSV pode corromper descrições.
+    - Não importa brand nem commission — reimportar um CSV exportado
+      PERDE DADOS silenciosamente.
+    - Sem deduplicação: reimportar o mesmo arquivo duplica todos os
+      produtos (não há constraint única).
+    - Headers assumem português fixo; qualquer variação quebra o
+      mapeamento.
+    Sugestão: usar uma lib de CSV (ex.: papaparse) ou implementar
+    escape/unescape correto; incluir todos os campos; adicionar
+    dedup por nome+preço ou constraint única.
+
+[ ] 3. SUPABASE-SCHEMA.SQL DESATUALIZADO NA RAIZ
+    Arquivo: supabase-schema.sql
+    Problema: contém políticas antigas e não reflete as migrations.
+    Risco de alguém reaplicar um schema inseguro.
+    Sugestão: remover o arquivo ou marcá-lo como deprecated.
+
+[ ] 4. PAGINAÇÃO E BULK ACTIONS NO ADMIN
+    Problema: getProducts() carrega o catálogo inteiro (loop de 500 em
+    src/utils/storage.ts). Sem paginação na tabela, sem ordenação,
+    sem ações em massa (ativar/desativar/excluir vários de uma vez).
+    Com milhares de produtos, AdminDashboard e ManageImages ficam
+    pesados.
+    Sugestão: paginação server-side (range + count) e/ou ações em
+    lote.
+
+================================================================================
+PRIORIDADE MÉDIA
+================================================================================
+
+[ ] 5. SIGNUP ABERTO EM /admin
+    Problema: qualquer pessoa pode criar conta via signUp.
+    Não dá acesso a nada sem convite, mas gera contas spam.
+    Arquivo: src/pages/AdminLogin.tsx
+    Sugestão: desabilitar signups públicos no Supabase Auth ou adicionar
+    CAPTCHA. Alternativa: fluxo só por convite.
+
+[ ] 6. SEM "ESQUECI A SENHA"
+    Problema: não há link de recuperação de senha na tela de login.
+    O usuário precisa passar pelo fluxo de recovery do Supabase por fora.
+    Arquivo: src/pages/AdminLogin.tsx
+    Sugestão: adicionar supabase.auth.resetPasswordForEmail() e tela de
+    nova senha.
+
+[ ] 7. LOGOUT SÓ LOCAL
+    Problema: signOut({ scope: 'local' }) não revoga o refresh token no
+    servidor — em máquina compartilhada a sessão continua válida.
+    Arquivo: src/hooks/useAuth.tsx (linha ~30)
+    Sugestão: usar scope 'global' ou 'others'.
+
+[ ] 8. MEMBROS NÃO GERENCIAM ACESSOS
+    Problema: só isPlatformAdmin vê convites e pode suspender a loja
+    (StoreSettings.tsx, linhas ~24 e ~110). O lojista membro não
+    consegue convidar/remover membros da própria loja.
+    Sugestão: confirmar se é decisão consciente; se não for, liberar
+    gestão de membros para can_manage_store via novas policies/RPCs.
+
+[ ] 9. IMAGEM SÓ POR URL / REGRA INCONSISTENTE
+    Problemas:
+    - Sem upload para Supabase Storage; sem preview de imagem quebrada.
+    - O formulário de produto EXIGE imageUrl, mas o ManageImages tem
+      filtro "sem imagem" — regras contraditórias.
+    Arquivos: src/pages/AdminDashboard.tsx, src/pages/ManageImages.tsx
+    Sugestão: alinhar a regra (imagem opcional ou obrigatória) e
+    considerar upload real.
+
+[ ] 10. SEM AUDITORIA
+    Problema: não há registro de quem alterou/excluiu produto, editou
+    vitrine ou suspendeu loja. Com múltiplos operadores, disputas são
+    impossíveis de rastrear.
+    Sugestão: tabela de audit_log (quem, o quê, quando) via trigger ou
+    RPCs.
+
+================================================================================
+PRIORIDADE BAIXA / MELHORIAS
+================================================================================
+
+[ ] 11. CONCORRÊNCIA SEM DETECÇÃO
+    Dois admins editando o mesmo produto = last-write-wins.
+    updated_at existe mas não é usado para detectar conflito.
+    Sugestão: comparar updated_at no update e avisar em caso de
+    divergência.
+
+[ ] 12. CATEGORIAS HARDCODED
+    Lista fixa em AdminDashboard.tsx (~linha 41) e provavelmente
+    duplicada em src/utils/categories.ts.
+    Sugestão: fonte única (constante compartilhada ou tabela no banco).
+
+[ ] 13. APP_METADATA PODE FICAR STALE
+    Se a flag shopay_admin for alterada, o cliente só reflete após
+    refresh do JWT. isPlatformAdmin pode ficar desatualizado.
+    Sugestão: chamar supabase.auth.refreshSession() após mudanças de
+    role, ou verificar via RPC no backend.
+
+[ ] 14. TRATAMENTO DE ERROS GENÉRICO
+    Erros são engolidos em mensagens genéricas com console.error.
+    Dificulta suporte/diagnóstico.
+    Sugestão: exibir error.message do Supabase em dev ou logar em
+    serviço de monitoramento.
+
+[ ] 15. BUSCA DO ADMIN LIMITADA
+    Filtra só nome/categoria — não busca em descrição, marca ou link.
+    Arquivo: src/pages/AdminDashboard.tsx (useEffect de filtro)
+
+[ ] 16. SEM TESTES
+    Nenhuma camada (hooks, utils/storage, componentes) tem testes.
+    Sugestão: começar por utils/storage.ts e regras de validação do
+    formulário (vitest + testing-library).
+
+[ ] 17. TRIGGER updated_at PODE NÃO EXISTIR
+    supabase-schema.sql cria trigger update_products_updated_at, mas
+    as migrations não o recriam. Se o banco foi montado só via
+    migrations, o trigger não existe (o cliente seta updated_at
+    manualmente, então funciona, mas vale conferir).
+
+================================================================================
+CHECKLIST RÁPIDO (ordem sugerida)
+================================================================================
+1. Corrigir vazamento de commission (migration nova)
+2. Reescrever import/export CSV (papaparse + todos os campos + dedup)
+3. Remover/atualizar supabase-schema.sql
+4. Paginação server-side + bulk actions
+5. Esqueci a senha + logout global
+6. Upload de imagem + alinhar regra de obrigatoriedade
+7. Gestão de membros para não-admin (se desejado)
+8. Audit log
+9. Testes nas camadas críticas
+================================================================================

@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 
-const SITE_URL = 'https://painel-shopay.vercel.app';
+const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://painel-shopay.vercel.app').replace(/\/$/, '');
 const SITE_NAME = 'Shopay';
-const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/shopay-curadoria.svg`;
 
 interface MetaOptions {
   title: string;
@@ -12,6 +12,7 @@ interface MetaOptions {
   image?: string;
   type?: 'website' | 'product';
   noindex?: boolean;
+  pending?: boolean;
 }
 
 function upsertMeta(attr: 'name' | 'property', key: string, content: string) {
@@ -42,8 +43,10 @@ export function useDocumentMeta({
   image,
   type = 'website',
   noindex = false,
+  pending = false,
 }: MetaOptions) {
   useEffect(() => {
+    if (pending) return;
     const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
     const url = `${SITE_URL}${path}`;
     const imageUrl = image || DEFAULT_IMAGE;
@@ -68,5 +71,5 @@ export function useDocumentMeta({
     upsertMeta('name', 'twitter:image', imageUrl);
 
     upsertLink('canonical', url);
-  }, [title, siteName, description, path, image, type, noindex]);
+  }, [title, siteName, description, path, image, type, noindex, pending]);
 }

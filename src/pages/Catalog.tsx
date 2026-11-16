@@ -1,11 +1,11 @@
 import { useStorePath, useStore } from '../hooks/useStore';
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Category } from '../types';
 import { useStorefront } from '../hooks/useStorefront';
 import CatalogError from '../components/CatalogError';
 import { partnerUrl, searchKey } from '../utils/productPresentation';
-import { ALL_CATEGORIES, CATEGORY_META } from '../utils/categories';
+import { ALL_CATEGORIES, CATEGORY_META, categoryPath, seoCategories } from '../utils/categories';
 import ProductCard from '../components/ProductCard';
 import EmptyState from '../components/EmptyState';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -26,7 +26,10 @@ export default function Catalog() {
   const store = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const { products, status, retry } = useStorefront();
-  const requestedCategory = searchParams.get('category') as Category;
+  const { categorySlug } = useParams();
+  const navigate = useNavigate();
+  const categoryInfo = seoCategories.find((item) => item.slug === categorySlug);
+  const requestedCategory = categoryInfo?.name as Category || searchParams.get('category') as Category;
   const category = ALL_CATEGORIES.includes(requestedCategory) ? requestedCategory : '';
   const search = searchParams.get('search')?.trim() || '';
   const sortBy = SORT_OPTIONS.find(({ value }) => value === searchParams.get('sort'))?.value ?? 'name';
@@ -34,10 +37,11 @@ export default function Catalog() {
   const partnerOnly = searchParams.get('partner') === '1';
 
   useDocumentMeta({
-    title: 'Catálogo de produtos',
+    title: category ? `${category}: produtos e dicas para escolher` : 'Catálogo de produtos',
     description:
-      `Explore o catálogo de ${store.name}. Filtre por categoria e ordene por preço.`,
-    path: storePath('/catalog'),
+      categoryInfo?.guide || `Explore o catálogo de ${store.name}. Filtre por categoria e ordene por preço.`,
+    path: storePath(category ? categoryPath(category) : '/catalog'),
+    noindex: !!search || (!!categorySlug && !categoryInfo),
     siteName: store.name,
   });
 
@@ -47,7 +51,11 @@ export default function Catalog() {
       if (value === null || value === '') next.delete(key);
       else next.set(key, value);
     });
-    setSearchParams(next);
+    if (categorySlug) {
+      const selected = updates.category === undefined ? category : updates.category;
+      next.delete("category");
+      navigate(`${storePath(selected ? categoryPath(selected) : "/catalog")}${next.size ? `?${next}` : ""}`);
+    } else setSearchParams(next);
   };
 
   const filteredProducts = useMemo(() => {
@@ -92,7 +100,7 @@ export default function Catalog() {
   const hasActiveFilters = !!category || !!search || featuredOnly || partnerOnly || sortBy !== 'name';
 
   const clearFilters = () => {
-    setSearchParams({});
+    navigate(storePath('/catalog'));
   };
 
   const activeCategoryLabel = category ? CATEGORY_META[category]?.label || category : null;
@@ -106,7 +114,7 @@ export default function Catalog() {
         </h1>
         <p className="mt-2 text-brand-500">
           {activeCategoryLabel
-            ? `Produtos selecionados em ${activeCategoryLabel}.`
+            ? categoryInfo?.guide || `Produtos selecionados em ${activeCategoryLabel}.`
             : 'Descubra sua próxima escolha favorita.'}
         </p>
       </div>
@@ -129,11 +137,10 @@ export default function Catalog() {
           const meta = CATEGORY_META[cat];
           const active = category === cat;
           return (
-            <button
+            <Link
               key={cat}
-              type="button"
-              aria-pressed={active}
-              onClick={() => updateParams({ category: active ? null : cat })}
+              to={storePath(categoryPath(cat))}
+              aria-current={active ? "page" : undefined}
               className={`flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition-colors ${
                 active
                   ? 'border-brand-950 bg-brand-950 text-white'
@@ -142,7 +149,7 @@ export default function Catalog() {
             >
               <CategoryIcon icon={meta.icon} className="h-3.5 w-3.5" />
               {meta.label}
-            </button>
+            </Link>
           );
         })}
       </div>

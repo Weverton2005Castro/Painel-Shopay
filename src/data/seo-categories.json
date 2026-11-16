@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Perfumes",
+    "slug": "perfumes",
+    "guide": "Compare família olfativa, concentração e volume. Confira as notas descritas pelo fabricante e escolha de acordo com a ocasião e suas preferências."
+  },
+  {
+    "name": "Casa e Utilidades",
+    "slug": "casa-e-utilidades",
+    "guide": "Confira medidas, materiais e instruções de conservação antes de escolher. Verifique se o produto cabe no espaço e atende à rotina da sua casa."
+  },
+  {
+    "name": "Beleza",
+    "slug": "beleza",
+    "guide": "Compare a finalidade e as instruções de uso dos produtos. Confira a composição e as recomendações do fabricante para suas necessidades."
+  },
+  {
+    "name": "Acessórios",
+    "slug": "acessorios",
+    "guide": "Observe dimensões, materiais, cores e detalhes de acabamento. Confira as medidas informadas pelo vendedor para avaliar o uso no dia a dia."
+  },
+  {
+    "name": "Cursos",
+    "slug": "cursos",
+    "guide": "Confira o conteúdo programático, o formato das aulas, o prazo de acesso e os requisitos. Consulte as condições de suporte e certificado na plataforma responsável."
+  },
+  {
+    "name": "Alimentos",
+    "slug": "alimentos",
+    "guide": "Confira ingredientes, quantidade, validade e condições de armazenamento. Consulte o rótulo e as informações sobre alergênicos antes da compra."
+  },
+  {
+    "name": "Papelaria",
+    "slug": "papelaria",
+    "guide": "Compare tamanho, quantidade de folhas, tipo de papel e acabamento. Escolha os materiais conforme o uso: estudo, organização ou trabalho."
+  },
+  {
+    "name": "Serviços",
+    "slug": "servicos",
+    "guide": "Confira o que está incluído, a região atendida e as condições de agendamento. Confirme valores e prazos diretamente com o prestador."
+  },
+  {
+    "name": "Cosméticos",
+    "slug": "cosmeticos",
+    "guide": "Confira composição, finalidade e modo de uso. Leia as orientações do fabricante e verifique restrições antes de escolher."
+  },
+  {
+    "name": "Outros",
+    "slug": "outros",
+    "guide": "Explore os produtos disponíveis e compare suas características. Confira descrição, preço final e condições na loja de destino."
+  }
+]

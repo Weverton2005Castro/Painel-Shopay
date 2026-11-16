@@ -1,6 +1,6 @@
 import { useStorePath, useStore } from '../hooks/useStore';
 import { Link } from 'react-router-dom';
-import { ALL_CATEGORIES } from '../utils/categories';
+import { categoryPath, ALL_CATEGORIES } from '../utils/categories';
 
 export default function Footer() {
   const storePath = useStorePath();
@@ -29,7 +29,7 @@ export default function Footer() {
               {ALL_CATEGORIES.slice(0, 6).map((cat) => (
                 <li key={cat}>
                   <Link
-                    to={storePath(`/catalog?category=${encodeURIComponent(cat)}`)}
+                    to={storePath(categoryPath(cat))}
                     className="text-sm text-brand-400 transition-colors hover:text-white"
                   >
                     {cat}

@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useStorefront } from '../hooks/useStorefront';
 import CatalogError from '../components/CatalogError';
 import { formatPrice, partnerUrl } from '../utils/productPresentation';
-import { getCategoryMeta } from '../utils/categories';
+import { categoryPath, seoCategories, getCategoryMeta } from '../utils/categories';
 import ProductCard from '../components/ProductCard';
 import ProductImage from '../components/ProductImage';
 import EmptyState from '../components/EmptyState';
@@ -26,15 +26,16 @@ export default function ProductDetail() {
   const meta = product ? getCategoryMeta(product.category) : null;
 
   useDocumentMeta({
-    title: product ? product.name : 'Produto não encontrado',
+    title: product ? product.name : status === 'ready' ? 'Produto não encontrado' : 'Carregando produto',
     description: product
       ? `${product.name}${product.brand ? ` — ${product.brand}` : ''}. ${product.description} Veja os detalhes em ${store.name}.`
       : 'Produto não encontrado.',
-    path: storePath(product ? `/product/${product.id}` : '/404'),
+    path: storePath(`/product/${encodeURIComponent(id || '')}`),
     siteName: store.name,
     image: product?.imageUrl,
     type: 'product',
-    noindex: !product,
+    pending: status !== 'ready',
+    noindex: status === 'ready' && !product,
   });
 
   const jsonLd = useMemo(() => {
@@ -47,6 +48,7 @@ export default function ProductDetail() {
       image: product.imageUrl || undefined,
       brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
       category: product.category,
+      url: window.location.origin + storePath(`/product/${encodeURIComponent(product.id)}`),
       offers: purchaseUrl ? {
         '@type': 'Offer',
         url: purchaseUrl,
@@ -79,6 +81,14 @@ export default function ProductDetail() {
     <div className="container mx-auto px-4 py-8 sm:px-6">
       {jsonLd && <JsonLd data={jsonLd} id="product-json-ld" />}
 
+      <JsonLd id="breadcrumb-json-ld" data={{
+        '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: store.name, item: window.location.origin + storePath('/') },
+          { '@type': 'ListItem', position: 2, name: product.category, item: window.location.origin + storePath(categoryPath(product.category)) },
+          { '@type': 'ListItem', position: 3, name: product.name },
+        ],
+      }} />
       {/* Breadcrumb */}
       <nav aria-label="Trilha de navegação" className="mb-6 flex flex-wrap items-center gap-2 text-sm text-brand-500">
         <Link to={storePath('/')} className="transition-colors hover:text-brand-900">Início</Link>
@@ -95,6 +105,7 @@ export default function ProductDetail() {
           {/* Imagem */}
           <div className="product-image relative aspect-[4/3] md:aspect-auto md:min-h-[28rem]">
             <ProductImage
+              priority
               src={product.imageUrl}
               alt={product.name}
               className="absolute inset-0 h-full w-full object-contain p-5 sm:p-8"
@@ -170,6 +181,12 @@ export default function ProductDetail() {
         </div>
       </div>
 
+      <section className="card mt-8 p-6" aria-labelledby="escolha-titulo">
+        <h2 id="escolha-titulo" className="text-xl font-bold">O que conferir antes de comprar</h2>
+        <p className="mt-3 leading-relaxed text-brand-600">{seoCategories.find((item) => item.name === product.category)?.guide}</p>
+        <p className="mt-3 text-sm text-brand-600">Consulte preço atualizado, frete, prazo de entrega e política de devolução na loja parceira antes de finalizar o pedido.</p>
+        <Link className="mt-4 inline-block font-bold text-accent-700 hover:underline" to={storePath(categoryPath(product.category))}>Explorar {product.category}</Link>
+      </section>
       {/* Produtos relacionados */}
       {related.length > 0 && (
         <section className="mt-14" aria-labelledby="relacionados-titulo">

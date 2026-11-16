@@ -87,6 +87,7 @@ function App() {
             <Route element={<StoreLayout />}>
               <Route index element={<Home />} />
               <Route path="catalog" element={<Catalog />} />
+              <Route path="categoria/:categorySlug" element={<Catalog />} />
               <Route path="product/:id" element={<ProductDetail />} />
             </Route>
           </Route>
@@ -94,6 +95,7 @@ function App() {
             <Route element={<StoreLayout />}>
               <Route index element={<Home />} />
               <Route path="catalog" element={<Catalog />} />
+              <Route path="categoria/:categorySlug" element={<Catalog />} />
               <Route path="product/:id" element={<ProductDetail />} />
             </Route>
           </Route>

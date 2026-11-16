@@ -1,3 +1,4 @@
+import seoCategories from '../data/seo-categories.json';
 import { Category } from '../types';
 
 export interface CategoryMeta {
@@ -75,3 +76,9 @@ export const ALL_CATEGORIES = Object.keys(CATEGORY_META) as Category[];
 export function getCategoryMeta(category: string): CategoryMeta {
   return (CATEGORY_META as Record<string, CategoryMeta>)[category] || CATEGORY_META.Outros;
 }
+
+export function categoryPath(category: string) {
+  return `/categoria/${seoCategories.find((item) => item.name === category)?.slug || "outros"}`;
+}
+
+export { seoCategories };

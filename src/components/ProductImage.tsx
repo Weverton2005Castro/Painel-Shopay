@@ -4,9 +4,10 @@ interface ProductImageProps {
   src: string;
   alt: string;
   className?: string;
+  priority?: boolean;
 }
 
-export default function ProductImage({ src, alt, className = '' }: ProductImageProps) {
+export default function ProductImage({ src, alt, className = '', priority = false }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
 
   if (!src || failed) {
@@ -32,7 +33,8 @@ export default function ProductImage({ src, alt, className = '' }: ProductImageP
     <img
       src={src}
       alt={alt}
-      loading="lazy"
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
       decoding="async"
       onError={() => setFailed(true)}
       className={className}
